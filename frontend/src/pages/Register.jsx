@@ -6,6 +6,7 @@ const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState('HR');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   
@@ -18,7 +19,7 @@ const Register = () => {
     setLoading(true);
     
     try {
-      await register(name, email, password);
+      await register(name, email, password, role);
       navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.message || err.response?.data?.errors?.[0]?.msg || 'Failed to register');
@@ -88,6 +89,18 @@ const Register = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
               />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Role</label>
+              <select
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                className="mt-1 block w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 sm:text-sm transition-all"
+              >
+                <option value="Admin">Admin</option>
+                <option value="HR">HR</option>
+                <option value="Manager">Manager</option>
+              </select>
             </div>
           </div>
 

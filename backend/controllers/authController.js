@@ -19,7 +19,7 @@ const registerUser = async (req, res) => {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { name, email, password } = req.body;
+  const { name, email, password, role } = req.body;
 
   try {
     // Check if user exists
@@ -37,6 +37,7 @@ const registerUser = async (req, res) => {
       name,
       email,
       password: hashedPassword,
+      role: role || 'HR'
     });
 
     if (user) {

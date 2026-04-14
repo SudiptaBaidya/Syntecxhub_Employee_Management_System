@@ -31,6 +31,15 @@ const Navbar = ({ setSidebarOpen }) => {
             <User className="h-4 w-4" />
           </div>
           <span className="text-sm font-medium text-slate-700 hidden sm:block">{user?.name}</span>
+          {user?.role && (
+            <span className={`hidden sm:inline-flex items-center rounded-md px-2 py-1 text-xs font-bold ring-1 ring-inset ml-2 ${
+              user.role === 'Admin' ? 'bg-purple-50 text-purple-700 ring-purple-700/10' :
+              user.role === 'HR' ? 'bg-blue-50 text-blue-700 ring-blue-700/10' :
+              'bg-slate-50 text-slate-700 ring-slate-700/10'
+            }`}>
+              {user.role}
+            </span>
+          )}
         </div>
         
         <button
