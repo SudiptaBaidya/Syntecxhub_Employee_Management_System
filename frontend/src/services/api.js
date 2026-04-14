@@ -1,7 +1,14 @@
 import axios from 'axios';
 
+// Ensure the baseURL points to the /api endpoint and handles trailing slashes correctly
+const getBaseURL = () => {
+  const url = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+  // Ensure it ends with /api/
+  return url.replace(/\/$/, '') + '/';
+};
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: getBaseURL(),
 });
 
 // Request interceptor for adding the auth token
