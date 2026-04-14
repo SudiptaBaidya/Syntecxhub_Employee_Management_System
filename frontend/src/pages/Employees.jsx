@@ -3,6 +3,7 @@ import { Plus, Search, Edit2, Trash2, ChevronLeft, ChevronRight, FileDown } from
 import toast from 'react-hot-toast';
 import api from '../services/api';
 import EmployeeForm from '../components/employees/EmployeeForm';
+import { useAuth } from '../context/AuthContext';
 
 const Employees = () => {
   const [employees, setEmployees] = useState([]);
@@ -19,6 +20,7 @@ const Employees = () => {
   // Form modal state
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [currentEmployee, setCurrentEmployee] = useState(null);
+  const { user } = useAuth();
 
   const fetchEmployees = async () => {
     setLoading(true);
@@ -95,20 +97,24 @@ const Employees = () => {
           <p className="mt-1 text-sm text-slate-500">Manage your team members and their account permissions here.</p>
         </div>
         <div className="flex gap-3 w-full sm:w-auto">
-          <button 
-            onClick={exportCSV}
-            className="flex-1 sm:flex-none inline-flex items-center justify-center rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 transition-all"
-          >
-            <FileDown className="-ml-1 mr-2 h-4 w-4 text-slate-500 text-indigo-600" />
-            <span className="whitespace-nowrap">Export CSV</span>
-          </button>
-          <button
-            onClick={() => openForm()}
-            className="flex-1 sm:flex-none inline-flex items-center justify-center rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-all"
-          >
-            <Plus className="-ml-1 mr-2 h-4 w-4" />
-            <span className="whitespace-nowrap">Add Employee</span>
-          </button>
+          {user?.role !== 'Manager' && (
+            <button 
+              onClick={exportCSV}
+              className="flex-1 sm:flex-none inline-flex items-center justify-center rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 transition-all"
+            >
+              <FileDown className="-ml-1 mr-2 h-4 w-4 text-slate-500 text-indigo-600" />
+              <span className="whitespace-nowrap">Export CSV</span>
+            </button>
+          )}
+          {(user?.role === 'Admin' || user?.role === 'HR') && (
+            <button
+              onClick={() => openForm()}
+              className="flex-1 sm:flex-none inline-flex items-center justify-center rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-all"
+            >
+              <Plus className="-ml-1 mr-2 h-4 w-4" />
+              <span className="whitespace-nowrap">Add Employee</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -225,20 +231,24 @@ const Employees = () => {
                     </td>
                     <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                       <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                          onClick={() => openForm(employee)}
-                          className="text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 p-2 rounded-lg transition-colors ring-1 ring-transparent hover:ring-indigo-100 shadow-sm"
-                          title="Edit"
-                        >
-                          <Edit2 className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(employee._id)}
-                          className="text-rose-600 hover:text-rose-900 hover:bg-rose-50 p-2 rounded-lg transition-colors ring-1 ring-transparent hover:ring-rose-100 shadow-sm"
-                          title="Delete"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                        {(user?.role === 'Admin' || user?.role === 'HR') && (
+                          <button
+                            onClick={() => openForm(employee)}
+                            className="text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 p-2 rounded-lg transition-colors ring-1 ring-transparent hover:ring-indigo-100 shadow-sm"
+                            title="Edit"
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </button>
+                        )}
+                        {user?.role === 'Admin' && (
+                          <button
+                            onClick={() => handleDelete(employee._id)}
+                            className="text-rose-600 hover:text-rose-900 hover:bg-rose-50 p-2 rounded-lg transition-colors ring-1 ring-transparent hover:ring-rose-100 shadow-sm"
+                            title="Delete"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
