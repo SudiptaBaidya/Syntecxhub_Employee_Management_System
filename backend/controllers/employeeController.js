@@ -10,7 +10,7 @@ const getEmployees = async (req, res, next) => {
     const skip = (page - 1) * limit;
 
     // Search & Filter
-    let query = {};
+    let query = { user: req.user.id };
     if (req.query.search) {
       query.$or = [
         { name: { $regex: req.query.search, $options: 'i' } },
@@ -51,7 +51,7 @@ const getEmployees = async (req, res, next) => {
 // @access  Private
 const getEmployeeById = async (req, res, next) => {
   try {
-    const employee = await Employee.findById(req.params.id);
+    const employee = await Employee.findOne({ _id: req.params.id, user: req.user.id });
     if (!employee) {
       res.status(404);
       throw new Error('Employee not found');
@@ -73,7 +73,10 @@ const createEmployee = async (req, res, next) => {
       throw new Error('Email already exists');
     }
 
-    const employee = await Employee.create(req.body);
+    const employee = await Employee.create({
+      ...req.body,
+      user: req.user.id
+    });
     res.status(201).json(employee);
   } catch (error) {
     next(error);
@@ -85,7 +88,7 @@ const createEmployee = async (req, res, next) => {
 // @access  Private
 const updateEmployee = async (req, res, next) => {
   try {
-    const employee = await Employee.findById(req.params.id);
+    const employee = await Employee.findOne({ _id: req.params.id, user: req.user.id });
 
     if (!employee) {
       res.status(404);
@@ -100,8 +103,8 @@ const updateEmployee = async (req, res, next) => {
       }
     }
 
-    const updatedEmployee = await Employee.findByIdAndUpdate(
-      req.params.id,
+    const updatedEmployee = await Employee.findOneAndUpdate(
+      { _id: req.params.id, user: req.user.id },
       req.body,
       { new: true, runValidators: true }
     );
@@ -117,7 +120,7 @@ const updateEmployee = async (req, res, next) => {
 // @access  Private
 const deleteEmployee = async (req, res, next) => {
   try {
-    const employee = await Employee.findById(req.params.id);
+    const employee = await Employee.findOne({ _id: req.params.id, user: req.user.id });
 
     if (!employee) {
       res.status(404);
@@ -136,16 +139,17 @@ const deleteEmployee = async (req, res, next) => {
 // @access  Private
 const getDashboardStats = async (req, res, next) => {
   try {
-    const totalEmployees = await Employee.countDocuments();
-    const activeEmployees = await Employee.countDocuments({ status: 'Active' });
-    const inactiveEmployees = await Employee.countDocuments({ status: 'Inactive' });
+    const totalEmployees = await Employee.countDocuments({ user: req.user.id });
+    const activeEmployees = await Employee.countDocuments({ user: req.user.id, status: 'Active' });
+    const inactiveEmployees = await Employee.countDocuments({ user: req.user.id, status: 'Inactive' });
 
     // Department wise distribution
     const departmentStats = await Employee.aggregate([
+      { $match: { user: new mongoose.Types.ObjectId(req.user.id) } },
       { $group: { _id: '$department', count: { $sum: 1 } } }
     ]);
 
-    const recentEmployees = await Employee.find().sort({ createdAt: -1 }).limit(5);
+    const recentEmployees = await Employee.find({ user: req.user.id }).sort({ createdAt: -1 }).limit(5);
 
     res.json({
       totalEmployees,
